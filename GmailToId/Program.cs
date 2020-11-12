@@ -26,7 +26,7 @@ namespace GmailToId
         private async Task Run()
         {
 
-            var conn = await Connection.GetAuthorizationUsingCredentials("C:\\Users\\Me\\Downloads\\client_secret_10.json", PeopleServiceService.Scope.Contacts);
+            var conn = await Connection.GetAuthorizationUsingCredentials(@"C:\Users\Me\\Downloads\client_secret_10.json", PeopleServiceService.Scope.Contacts);
 
             var googlePeopleService = new GooglePeopleService(conn);
 
