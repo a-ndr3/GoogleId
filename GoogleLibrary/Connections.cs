@@ -1,12 +1,10 @@
 ﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.PeopleService.v1;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GmailToId
+namespace MyGoogleConnectionLib
 {
     public static class Connection
     {
