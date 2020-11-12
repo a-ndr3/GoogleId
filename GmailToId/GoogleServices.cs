@@ -4,6 +4,7 @@ using Google.Apis.PeopleService.v1.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace GmailToId
@@ -12,8 +13,30 @@ namespace GmailToId
     {
         private PeopleServiceService peopleService;
 
+        /// <summary>
+        /// OAuth2 service
+        /// </summary>
         public GooglePeopleService(UserCredential credentials)
         {
+            peopleService = new PeopleServiceService(new Google.Apis.Services.BaseClientService.Initializer
+            {
+                HttpClientInitializer = credentials
+            });
+        }
+
+        /// <summary>
+        /// Service account that uses .p12 key and service mail
+        /// </summary>
+        /// <param name="keyFilePath"> .p12 key obtained from dev.google.com service accounts </param>
+        /// <param name="googleScope"> type of scope from google api </param>
+        public GooglePeopleService(string keyFilePath, string googleScope, string serviceAccEmail)
+        {
+            ServiceCredential credentials;
+            var certificate = new X509Certificate2(keyFilePath, "notasecret", X509KeyStorageFlags.Exportable);
+            credentials = new ServiceAccountCredential(new ServiceAccountCredential.Initializer(serviceAccEmail)
+            {
+                Scopes = new[] { googleScope },
+            }.FromCertificate(certificate));
             peopleService = new PeopleServiceService(new Google.Apis.Services.BaseClientService.Initializer
             {
                 HttpClientInitializer = credentials

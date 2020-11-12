@@ -15,12 +15,9 @@ namespace GmailToId
             {
                 new Program().Run().Wait();
             }
-            catch (AggregateException ex)
+            catch (Exception ex)
             {
-                foreach (var e in ex.InnerExceptions)
-                {
-
-                }
+                throw ex;
             }
 
 

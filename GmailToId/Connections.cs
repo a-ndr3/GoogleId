@@ -20,7 +20,9 @@ namespace GmailToId
         public static async Task<UserCredential> GetAuthorizationUsingCredentials(string keyFilePath, string googleScope, ClientSecrets secrets = null)
         {
             if (String.IsNullOrEmpty(keyFilePath) && secrets == null)
+            {
                 throw new ArgumentException();
+            }
 
             if (string.IsNullOrEmpty(googleScope))
             {
@@ -34,9 +36,9 @@ namespace GmailToId
                 using (var stream = new FileStream(keyFilePath, FileMode.Open, FileAccess.Read))
                 {
                     credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.Load(stream).Secrets,
-                        new[] { googleScope },
-                        "user", CancellationToken.None); // + dataStore = authorization
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    new[] { googleScope },
+                    "user", CancellationToken.None); // + dataStore = authorization
                 }
             }
             else
