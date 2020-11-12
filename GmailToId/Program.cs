@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Apis.PeopleService.v1;
+using System;
 using System.Threading.Tasks;
 
 namespace GmailToId
@@ -12,35 +13,29 @@ namespace GmailToId
 
             try
             {
-                new Program().Run1().Wait();
+                new Program().Run().Wait();
             }
             catch (AggregateException ex)
             {
                 foreach (var e in ex.InnerExceptions)
                 {
-                    
+
                 }
             }
 
-            
+
         }
 
-        //https://console.developers.google.com/apis/api/people.googleapis.com/overview?project=
-        //https://console.developers.google.com/apis/credentials/
-        // allow access to people api / contacts api
-        // allow unsafe apps
-
-        private async Task Run1()
+        private async Task Run()
         {
 
-            Connections connections = new Connections();
-            var cred = await connections.GetUserCredential("C:\\Users\\Me\\Downloads\\client_secret_10.json");
+            var conn = await Connection.GetAuthorizationUsingCredentials("C:\\Users\\Me\\Downloads\\client_secret_10.json", PeopleServiceService.Scope.Contacts);
 
-            Worker worker = new Worker("somemail@gmail.com");
+            var googlePeopleService = new GooglePeopleService(conn);
 
-            worker.GetId(connections.GetService(cred));
+            var id = googlePeopleService.GetId("somemail@gmail.com");
 
         }
-
     }
+
 }

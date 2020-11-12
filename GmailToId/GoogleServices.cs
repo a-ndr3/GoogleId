@@ -1,32 +1,36 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.PeopleService.v1;
 using Google.Apis.PeopleService.v1.Data;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GmailToId
 {
-    class Worker
+    public class GooglePeopleService
     {
-        private string mailToId = "";
-        public Worker(string gmail)
+        private PeopleServiceService peopleService;
+
+        public GooglePeopleService(UserCredential credentials)
         {
-            mailToId = gmail;
+            peopleService = new PeopleServiceService(new Google.Apis.Services.BaseClientService.Initializer
+            {
+                HttpClientInitializer = credentials
+            });
         }
-        private async Task<string> RegisterUser(PeopleServiceService service)
+
+        private async Task<string> RegisterUser(string mail)
         {
-            Person contactToCreate = new Person();
+            var contactToCreate = new Person();
+
             List<Name> names = new List<Name>();
             List<EmailAddress> email = new List<EmailAddress>();
             List<Biography> biographies = new List<Biography>();
             List<Gender> genders = new List<Gender>();
 
             names.Add(new Name() { GivenName = "John", FamilyName = "Doe" });
-            email.Add(new EmailAddress() { DisplayName = "test", Value = mailToId });
+            email.Add(new EmailAddress() { DisplayName = "test", Value = mail });
             biographies.Add(new Biography() { Value = "10.10.2005" });
             genders.Add(new Gender() { Value = "male" });
 
@@ -35,8 +39,7 @@ namespace GmailToId
             contactToCreate.Genders = genders;
             contactToCreate.EmailAddresses = email;
 
-            Google.Apis.PeopleService.v1.PeopleResource.CreateContactRequest request =
-             new Google.Apis.PeopleService.v1.PeopleResource.CreateContactRequest(service, contactToCreate);
+            var request = new PeopleResource.CreateContactRequest(peopleService, contactToCreate);
 
             Person createdContact = request.Execute();
 
@@ -44,28 +47,28 @@ namespace GmailToId
 
         }
 
-        private async void DeleteUser(PeopleServiceService service, string id)
+        private async void DeleteUser(string id)
         {
-            Google.Apis.PeopleService.v1.PeopleResource.DeleteContactRequest request =
-            new Google.Apis.PeopleService.v1.PeopleResource.DeleteContactRequest(service, id);
+            var request = new PeopleResource.DeleteContactRequest(peopleService, id);
             await request.ExecuteAsync();
         }
 
-        private async Task<ListConnectionsResponse> GetAddInfo(PeopleServiceService service)
+        private async Task<ListConnectionsResponse> GetAddInfo()
         {
-            Google.Apis.PeopleService.v1.PeopleResource.ConnectionsResource.ListRequest peopleRequest =
-            service.People.Connections.List("people/me");
+            var peopleRequest = peopleService.People.Connections.List("people/me");
             peopleRequest.PersonFields = "names,emailAddresses,userDefined,clientData,coverPhotos,locations,phoneNumbers,photos";
-            peopleRequest.SortOrder = (Google.Apis.PeopleService.v1.PeopleResource.ConnectionsResource.ListRequest.SortOrderEnum)1;
-            ListConnectionsResponse people = peopleRequest.Execute();
+            peopleRequest.SortOrder = (PeopleResource.ConnectionsResource.ListRequest.SortOrderEnum)1;
+
+            var people = peopleRequest.Execute();
 
             return people;
         }
-        public string GetId(PeopleServiceService service)
-        {
-            var decId = RegisterUser(service);
 
-            var contactInfoResponse = GetAddInfo(service);
+        public string GetId(string gmail)
+        {
+            var decId = RegisterUser(gmail);
+
+            var contactInfoResponse = GetAddInfo();
 
             if (contactInfoResponse.Exception == null)
             {
@@ -87,7 +90,7 @@ namespace GmailToId
             }
             else
             {
-                Google.Apis.PeopleService.v1.PeopleResource.GetRequest request = new Google.Apis.PeopleService.v1.PeopleResource.GetRequest(service, decId.Result);
+                var request = new PeopleResource.GetRequest(peopleService, decId.Result);
                 request.PersonFields = "metadata";
 
                 var requestResult = request.Execute();
@@ -98,11 +101,10 @@ namespace GmailToId
                 }
             }
 
-            DeleteUser(service, decId.Result);
+            DeleteUser(decId.Result);
 
 
             return String.Empty;
         }
-
     }
 }
